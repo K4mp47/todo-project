@@ -3,12 +3,14 @@ from app.api import bp
 from app.models import User
 from app.api.errors import bad_request
 from app import db
+from flask_cors import cross_origin
 
 @bp.route('/users/<int:id>', methods=['GET'])
 def get_user(id):
     return jsonify(User.query.get_or_404(id).to_dict())
 
 @bp.route('/users', methods=['GET'])
+@cross_origin(origin='http://127.0.0.1:3000')
 def get_users():
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
@@ -18,7 +20,7 @@ def get_users():
 @bp.route('/users', methods=['POST'])
 def create_user():
     data = request.get_json() or {}
-    if 'username'  not in data or 'email' not in data or 'password' not in data:
+    if 'email'  not in data or 'password' not in data or 'username' not in data:
         return bad_request('must include username, email and password')
     if User.query.filter_by(username=data['username']).first():
         return bad_request('username already in use')
